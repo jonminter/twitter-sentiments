@@ -21,7 +21,7 @@ public class Tweet2WordFlatMapper implements FlatMapFunction<Tweet, Tuple2<Strin
     public void flatMap(Tweet tweet, Collector<Tuple2<String, Integer>> out) throws Exception {
 
 
-        boolean isEnglish = tweet.getUser() != null && tweet.getLang() != null && LANG_ENGLISH.equals(tweet.getLang());
+        boolean isEnglish = tweet.getLang() != null && LANG_ENGLISH.equals(tweet.getLang());
         boolean hasText = tweet.getText() != null;
 
         if (isEnglish && hasText) {

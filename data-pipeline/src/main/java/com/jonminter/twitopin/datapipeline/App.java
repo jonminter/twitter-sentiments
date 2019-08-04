@@ -4,8 +4,7 @@
 package com.jonminter.twitopin.datapipeline;
 
 import com.jonminter.twitopin.datapipeline.models.Tweet;
-import com.jonminter.twitopin.datapipeline.models.TweetUser;
-import org.apache.flink.api.java.tuple.Tuple2;
+import com.jonminter.twitopin.datapipeline.models.TweetWithSentiment;
 import org.apache.flink.api.java.utils.ParameterTool;
 import org.apache.flink.streaming.api.datastream.DataStream;
 import org.apache.flink.streaming.api.environment.StreamExecutionEnvironment;
@@ -32,11 +31,10 @@ public class App {
 
         DataStream<Tweet> tweetObjectStream = tweetStream.map(new RawTweetMapper());
 
-        DataStream<Tuple2<String, Integer>> tweetWordCountStream = tweetStream
+        DataStream<TweetWithSentiment> tweetWordCountStream = tweetStream
                 .map(new RawTweetMapper())
-                .flatMap(new Tweet2WordFlatMapper())
-                .keyBy(0)
-                .sum(1);
+                .filter(new EnglishTweetsOnlyFilter())
+                .map(new SentimentMapper(new StanfordNlpSentimentHelper()));
 
         tweetWordCountStream.print();
 

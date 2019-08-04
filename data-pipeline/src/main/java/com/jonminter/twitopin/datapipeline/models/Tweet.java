@@ -1,43 +1,39 @@
 package com.jonminter.twitopin.datapipeline.models;
 
+import org.apache.flink.api.java.tuple.Tuple2;
+import org.apache.flink.shaded.jackson2.com.fasterxml.jackson.annotation.JsonCreator;
+import org.apache.flink.shaded.jackson2.com.fasterxml.jackson.annotation.JsonProperty;
+
 import java.util.StringJoiner;
 
-public final class Tweet {
-    private static final StringJoiner toStringJoiner = new StringJoiner(", ", Class.class.getSimpleName() + "[", "]");
+/**
+ * f0 - text
+ * f1 - lang
+ */
+public final class Tweet extends Tuple2<String, String> {
     private static final long serialVersionUID = 1L;
 
-    private final TweetUser user;
-    private final String text;
-    private final String lang;
-
     public Tweet() {
-        this.user = null;
-        this.text = null;
-        this.lang = null;
+        super(null, null);
     }
 
-    public Tweet(String text, String lang, TweetUser user) {
-        this.text = text;
-        this.user = user;
-        this.lang = lang;
+    @JsonCreator
+    public Tweet(@JsonProperty("text") String text, @JsonProperty("lang") String lang) {
+        super(text, lang);
     }
 
     public String getText() {
-        return text;
-    }
-
-    public TweetUser getUser() {
-        return user;
+        return f0;
     }
 
     public String getLang() {
-        return lang;
+        return f1;
     }
 
     public String toString() {
-        return toStringJoiner
-                .add("text=" + text)
-                .add("lang=" + lang)
+        return new StringJoiner(", ", getClass().getSimpleName() + "[", "]")
+                .add("text=" + f0)
+                .add("lang=" + f1)
                 .toString();
     }
 }
