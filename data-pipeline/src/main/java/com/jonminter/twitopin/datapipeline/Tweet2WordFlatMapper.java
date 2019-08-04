@@ -9,6 +9,8 @@ import org.apache.flink.util.Collector;
 import java.util.StringTokenizer;
 
 public class Tweet2WordFlatMapper implements FlatMapFunction<Tweet, Tuple2<String, Integer>> {
+    private static final long serialVersionUID = 1L;
+
     private final static String LANG_ENGLISH = "en";
 
     private class TweetUser {
@@ -19,11 +21,11 @@ public class Tweet2WordFlatMapper implements FlatMapFunction<Tweet, Tuple2<Strin
     public void flatMap(Tweet tweet, Collector<Tuple2<String, Integer>> out) throws Exception {
 
 
-        boolean isEnglish = tweet.getUser() != null && tweet.getUser().getLang() != null && LANG_ENGLISH.equals(tweet.getUser().getLang());
+        boolean isEnglish = tweet.getUser() != null && tweet.getLang() != null && LANG_ENGLISH.equals(tweet.getLang());
         boolean hasText = tweet.getText() != null;
 
         if (isEnglish && hasText) {
-            String[] words = tweet.getText().split("\\s*");
+            String[] words = tweet.getText().split("\\s+");
             for (String word: words) {
                 if (!words.equals("")) {
                     out.collect(new Tuple2<>(word, 1));

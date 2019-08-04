@@ -26,7 +26,11 @@ public class App {
         sse.getConfig().setGlobalJobParameters(params);
         sse.setParallelism(params.getInt("parallelism", 1));
 
+        System.out.println(params.getProperties());
+
         DataStream<String> tweetStream = sse.addSource(new TwitterSource(params.getProperties()));
+
+        DataStream<Tweet> tweetObjectStream = tweetStream.map(new RawTweetMapper());
 
         DataStream<Tuple2<String, Integer>> tweetWordCountStream = tweetStream
                 .map(new RawTweetMapper())
@@ -37,6 +41,7 @@ public class App {
         tweetWordCountStream.print();
 
         sse.execute("Twitter Word Count");
+
 
     }
 }
