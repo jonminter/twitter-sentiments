@@ -18,8 +18,10 @@ public class StanfordNlpSentimentHelper implements SentimentHelper {
     private static final Map<Integer, Sentiment> sentimentScoreMap = new HashMap<>();
     static {
         sentimentScoreMap.put(0, Sentiment.NEGATIVE);
-        sentimentScoreMap.put(1, Sentiment.NEUTRAL);
-        sentimentScoreMap.put(2, Sentiment.POSITIVE);
+        sentimentScoreMap.put(1, Sentiment.NEGATIVE);
+        sentimentScoreMap.put(2, Sentiment.NEUTRAL);
+        sentimentScoreMap.put(3, Sentiment.POSITIVE);
+        sentimentScoreMap.put(4, Sentiment.POSITIVE);
     }
     private StanfordCoreNLP pipeline;
     public StanfordNlpSentimentHelper() {

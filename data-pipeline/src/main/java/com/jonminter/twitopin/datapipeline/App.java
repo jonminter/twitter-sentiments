@@ -34,7 +34,7 @@ public class App {
         DataStream<TweetWithSentiment> tweetWordCountStream = tweetStream
                 .map(new RawTweetMapper())
                 .filter(new EnglishTweetsOnlyFilter())
-                .map(new SentimentMapper(new StanfordNlpSentimentHelper()));
+                .map(new SentimentMapper());
 
         tweetWordCountStream.print();
 
