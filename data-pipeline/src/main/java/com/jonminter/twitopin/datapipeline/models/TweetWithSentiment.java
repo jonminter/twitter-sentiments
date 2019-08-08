@@ -9,13 +9,16 @@ import java.util.StringJoiner;
  * f0 - tweet text
  * f1 - sentiment score
  */
-public class TweetWithSentiment extends Tuple2<String, Sentiment> {
+public class TweetWithSentiment extends Tuple3<String, Sentiment, Integer> {
+    public static final int FIELD_TWEET_TEXT = 0;
+    public static final int FIELD_SENTIMENT = 1;
+    public static final int FIELD_COUNT = 2;
     public TweetWithSentiment() {
-        super(null, null);
+        super(null, null, 1);
     }
 
     public TweetWithSentiment(Tweet tweet, Sentiment sentiment) {
-        super(tweet.getText(), sentiment);
+        super(tweet.getText(), sentiment, 1);
     }
 
     public String getText() {

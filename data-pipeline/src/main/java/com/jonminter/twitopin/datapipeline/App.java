@@ -3,17 +3,27 @@
  */
 package com.jonminter.twitopin.datapipeline;
 
+import com.jonminter.twitopin.datapipeline.models.Sentiment;
 import com.jonminter.twitopin.datapipeline.models.Tweet;
 import com.jonminter.twitopin.datapipeline.models.TweetWithSentiment;
+import org.apache.flink.api.common.functions.MapFunction;
+import org.apache.flink.api.java.tuple.Tuple;
+import org.apache.flink.api.java.tuple.Tuple2;
 import org.apache.flink.api.java.utils.ParameterTool;
 import org.apache.flink.streaming.api.datastream.DataStream;
 import org.apache.flink.streaming.api.environment.StreamExecutionEnvironment;
+import org.apache.flink.streaming.api.windowing.time.Time;
 import org.apache.flink.streaming.connectors.twitter.TwitterSource;
 
 public class App {
     public String getGreeting() {
         return "Hello world.";
     }
+    private static final String OP_MAP_TWEET_JSON_TO_MODEL = "map_tweet_to_pojo";
+    private static final String OP_FILTER_NON_EN_TWEETS = "filter_non_en_tweets";
+    private static final String OP_DETERMINE_SENTIMENT = "map_determine_sentiment";
+    private static final String OP_SUM_TWEETS = "sum_tweets_with_sentiment";
+    private static final Time AGGREGATION_WINDOW = Time.seconds(5);
 
     public static void main(String[] args) throws Exception {
         final ParameterTool params = ParameterTool.fromArgs(args);
@@ -29,12 +39,23 @@ public class App {
 
         DataStream<String> tweetStream = sse.addSource(new TwitterSource(params.getProperties()));
 
-        DataStream<Tweet> tweetObjectStream = tweetStream.map(new RawTweetMapper());
-
-        DataStream<TweetWithSentiment> tweetWordCountStream = tweetStream
-                .map(new RawTweetMapper())
-                .filter(new EnglishTweetsOnlyFilter())
-                .map(new SentimentMapper());
+        DataStream<Tuple2<Sentiment, Integer>> tweetWordCountStream = tweetStream
+                .map(new RawTweetMapper()) // Convert tweet json to text
+                .uid(OP_MAP_TWEET_JSON_TO_MODEL)
+                .filter(new EnglishTweetsOnlyFilter()) // Filter out non-english tweets
+                .uid(OP_FILTER_NON_EN_TWEETS)
+                .map(new SentimentMapper()) // Run sentiment analysis and find which tweets are neg/neutral/pos
+                .uid(OP_DETERMINE_SENTIMENT)
+                .map(new MapFunction<TweetWithSentiment, Tuple2<Sentiment, Integer>>() {
+                    @Override
+                    public Tuple2<Sentiment, Integer> map(TweetWithSentiment value) throws Exception {
+                        return new Tuple2<Sentiment, Integer>(value.getSentiment(), 2);
+                    }
+                })
+                .keyBy(0)
+                .timeWindow(AGGREGATION_WINDOW)
+                .sum(1)
+                .uid(OP_SUM_TWEETS);
 
         tweetWordCountStream.print();
 
