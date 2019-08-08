@@ -39,6 +39,20 @@ public class App {
 
         DataStream<String> tweetStream = sse.addSource(new TwitterSource(params.getProperties()));
 
+        /**
+         * End goal
+         * - Configuration of stock symbols to track, each symbol has an associated list of twitter phrases
+         * - Tweet stream filtered by all stock phrases
+         * - Map tween json to tweet model
+         * - Filter by english only
+         * - Add sentiment score
+         * - Do a flat map where search tweets for phrases if matches a phrase then add stock symbol and emit for each match
+         * - Create KeyedStream by stock symbol
+         * - Key by sentiment
+         * - Map to tuple of sentiment, count
+         * - Time window
+         * - Sum counts
+         */
         DataStream<Tuple2<Sentiment, Integer>> tweetWordCountStream = tweetStream
                 .map(new RawTweetMapper()) // Convert tweet json to text
                 .uid(OP_MAP_TWEET_JSON_TO_MODEL)
@@ -52,9 +66,9 @@ public class App {
                         return new Tuple2<Sentiment, Integer>(value.getSentiment(), 2);
                     }
                 })
-                .keyBy(0)
+                .keyBy(TweetWithSentiment.FIELD_SENTIMENT)
                 .timeWindow(AGGREGATION_WINDOW)
-                .sum(1)
+                .sum(TweetWithSentiment.FIELD_COUNT)
                 .uid(OP_SUM_TWEETS);
 
         tweetWordCountStream.print();
