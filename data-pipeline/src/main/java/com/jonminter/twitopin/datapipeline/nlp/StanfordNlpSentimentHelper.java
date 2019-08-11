@@ -1,4 +1,4 @@
-package com.jonminter.twitopin.datapipeline;
+package com.jonminter.twitopin.datapipeline.nlp;
 
 import com.jonminter.twitopin.datapipeline.models.Sentiment;
 import edu.stanford.nlp.ling.CoreAnnotations;

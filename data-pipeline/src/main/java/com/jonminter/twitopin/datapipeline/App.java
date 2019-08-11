@@ -4,10 +4,11 @@
 package com.jonminter.twitopin.datapipeline;
 
 import com.jonminter.twitopin.datapipeline.models.Sentiment;
-import com.jonminter.twitopin.datapipeline.models.Tweet;
 import com.jonminter.twitopin.datapipeline.models.TweetWithSentiment;
+import com.jonminter.twitopin.datapipeline.operators.EnglishTweetsOnlyFilter;
+import com.jonminter.twitopin.datapipeline.operators.RawTweetMapper;
+import com.jonminter.twitopin.datapipeline.operators.SentimentMapper;
 import org.apache.flink.api.common.functions.MapFunction;
-import org.apache.flink.api.java.tuple.Tuple;
 import org.apache.flink.api.java.tuple.Tuple2;
 import org.apache.flink.api.java.utils.ParameterTool;
 import org.apache.flink.streaming.api.datastream.DataStream;

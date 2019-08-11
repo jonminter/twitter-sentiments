@@ -1,5 +1,7 @@
-package com.jonminter.twitopin.datapipeline;
+package com.jonminter.twitopin.datapipeline.operators;
 
+import com.jonminter.twitopin.datapipeline.nlp.SentimentHelper;
+import com.jonminter.twitopin.datapipeline.nlp.StanfordNlpSentimentHelper;
 import com.jonminter.twitopin.datapipeline.models.Sentiment;
 import com.jonminter.twitopin.datapipeline.models.Tweet;
 import com.jonminter.twitopin.datapipeline.models.TweetWithSentiment;

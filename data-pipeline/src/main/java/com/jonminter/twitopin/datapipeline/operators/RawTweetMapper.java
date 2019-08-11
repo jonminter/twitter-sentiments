@@ -1,4 +1,4 @@
-package com.jonminter.twitopin.datapipeline;
+package com.jonminter.twitopin.datapipeline.operators;
 
 import com.jonminter.twitopin.datapipeline.models.Tweet;
 import org.apache.flink.api.common.functions.MapFunction;
