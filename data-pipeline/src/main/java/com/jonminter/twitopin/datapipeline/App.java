@@ -3,11 +3,14 @@
  */
 package com.jonminter.twitopin.datapipeline;
 
+import com.google.common.collect.Lists;
 import com.jonminter.twitopin.datapipeline.models.Sentiment;
+import com.jonminter.twitopin.datapipeline.models.StockToTrack;
 import com.jonminter.twitopin.datapipeline.models.TweetWithSentiment;
 import com.jonminter.twitopin.datapipeline.operators.EnglishTweetsOnlyFilter;
 import com.jonminter.twitopin.datapipeline.operators.RawTweetMapper;
 import com.jonminter.twitopin.datapipeline.operators.SentimentMapper;
+import com.jonminter.twitopin.datapipeline.sources.SourceFactory;
 import org.apache.flink.api.common.functions.MapFunction;
 import org.apache.flink.api.java.tuple.Tuple2;
 import org.apache.flink.api.java.utils.ParameterTool;
@@ -15,6 +18,8 @@ import org.apache.flink.streaming.api.datastream.DataStream;
 import org.apache.flink.streaming.api.environment.StreamExecutionEnvironment;
 import org.apache.flink.streaming.api.windowing.time.Time;
 import org.apache.flink.streaming.connectors.twitter.TwitterSource;
+
+import java.util.List;
 
 public class App {
     public String getGreeting() {
@@ -38,7 +43,9 @@ public class App {
 
         System.out.println(params.getProperties());
 
-        DataStream<String> tweetStream = sse.addSource(new TwitterSource(params.getProperties()));
+        List<StockToTrack> stocks = Lists.newArrayList(new StockToTrack("COF", Lists.newArrayList("cof", "capital one", "cap1")));
+        TwitterSource twitterSource = SourceFactory.createTwitterSource(params.getProperties(), stocks);
+        DataStream<String> tweetStream = sse.addSource(twitterSource);
 
         /**
          * End goal
@@ -55,7 +62,7 @@ public class App {
          * - Sum counts
          */
         DataStream<Tuple2<Sentiment, Integer>> tweetWordCountStream = tweetStream
-                .map(new RawTweetMapper()) // Convert tweet json to text
+                .flatMap(new RawTweetMapper()) // Convert tweet json to text
                 .uid(OP_MAP_TWEET_JSON_TO_MODEL)
                 .filter(new EnglishTweetsOnlyFilter()) // Filter out non-english tweets
                 .uid(OP_FILTER_NON_EN_TWEETS)
@@ -67,9 +74,9 @@ public class App {
                         return new Tuple2<Sentiment, Integer>(value.getSentiment(), 2);
                     }
                 })
-                .keyBy(TweetWithSentiment.FIELD_SENTIMENT)
+                .keyBy(0)
                 .timeWindow(AGGREGATION_WINDOW)
-                .sum(TweetWithSentiment.FIELD_COUNT)
+                .sum(1)
                 .uid(OP_SUM_TWEETS);
 
         tweetWordCountStream.print();
