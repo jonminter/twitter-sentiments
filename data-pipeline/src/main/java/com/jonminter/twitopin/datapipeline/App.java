@@ -4,12 +4,11 @@
 package com.jonminter.twitopin.datapipeline;
 
 import com.google.common.collect.Lists;
-import com.jonminter.twitopin.datapipeline.models.Sentiment;
-import com.jonminter.twitopin.datapipeline.models.StockToTrack;
-import com.jonminter.twitopin.datapipeline.models.TweetWithSentiment;
+import com.jonminter.twitopin.datapipeline.models.*;
 import com.jonminter.twitopin.datapipeline.operators.EnglishTweetsOnlyFilter;
 import com.jonminter.twitopin.datapipeline.operators.RawTweetMapper;
 import com.jonminter.twitopin.datapipeline.operators.SentimentMapper;
+import com.jonminter.twitopin.datapipeline.operators.StockMentionTweetMapper;
 import com.jonminter.twitopin.datapipeline.sources.SourceFactory;
 import org.apache.flink.api.common.functions.MapFunction;
 import org.apache.flink.api.java.tuple.Tuple2;
@@ -18,15 +17,17 @@ import org.apache.flink.streaming.api.datastream.DataStream;
 import org.apache.flink.streaming.api.environment.StreamExecutionEnvironment;
 import org.apache.flink.streaming.api.windowing.time.Time;
 import org.apache.flink.streaming.connectors.twitter.TwitterSource;
+import org.slf4j.Logger;
+import org.slf4j.LoggerFactory;
 
 import java.util.List;
 
 public class App {
-    public String getGreeting() {
-        return "Hello world.";
-    }
+    private static final Logger logger = LoggerFactory.getLogger(App.class);
+
     private static final String OP_MAP_TWEET_JSON_TO_MODEL = "map_tweet_to_pojo";
     private static final String OP_FILTER_NON_EN_TWEETS = "filter_non_en_tweets";
+    private static final String OP_CORRELATE_TO_STOCK = "map_correlated_to_stock";
     private static final String OP_DETERMINE_SENTIMENT = "map_determine_sentiment";
     private static final String OP_SUM_TWEETS = "sum_tweets_with_sentiment";
     private static final Time AGGREGATION_WINDOW = Time.seconds(5);
@@ -43,7 +44,10 @@ public class App {
 
         System.out.println(params.getProperties());
 
-        List<StockToTrack> stocks = Lists.newArrayList(new StockToTrack("COF", Lists.newArrayList("cof", "capital one", "cap1")));
+        List<StockToTrack> stocks = Lists.newArrayList(
+                new StockToTrack("COF", Lists.newArrayList("cof", "capital one", "cap1", "capitalone")),
+                new StockToTrack("WFC", Lists.newArrayList("wfc", "wells fargo", "wellsfargo")),
+                new StockToTrack("BAC", Lists.newArrayList("BAC", "bank of america", "boa", "bankofamerica")));
         TwitterSource twitterSource = SourceFactory.createTwitterSource(params.getProperties(), stocks);
         DataStream<String> tweetStream = sse.addSource(twitterSource);
 
@@ -61,22 +65,26 @@ public class App {
          * - Time window
          * - Sum counts
          */
-        DataStream<Tuple2<Sentiment, Integer>> tweetWordCountStream = tweetStream
+        DataStream<StockSentimentCount> tweetWordCountStream = tweetStream
                 .flatMap(new RawTweetMapper()) // Convert tweet json to text
                 .uid(OP_MAP_TWEET_JSON_TO_MODEL)
                 .filter(new EnglishTweetsOnlyFilter()) // Filter out non-english tweets
                 .uid(OP_FILTER_NON_EN_TWEETS)
+                .flatMap(new StockMentionTweetMapper(stocks))
+                .uid(OP_CORRELATE_TO_STOCK)
+                .keyBy(StockTweet.FIELD_STOCK_SYMBOL)
                 .map(new SentimentMapper()) // Run sentiment analysis and find which tweets are neg/neutral/pos
                 .uid(OP_DETERMINE_SENTIMENT)
-                .map(new MapFunction<TweetWithSentiment, Tuple2<Sentiment, Integer>>() {
+                .map(new MapFunction<StockTweetWithSentiment, StockSentimentCount>() {
                     @Override
-                    public Tuple2<Sentiment, Integer> map(TweetWithSentiment value) throws Exception {
-                        return new Tuple2<Sentiment, Integer>(value.getSentiment(), 2);
+                    public StockSentimentCount map(StockTweetWithSentiment value) throws Exception {
+                        logger.info("Symbol: {}, Sentiment: {}", value.getStockSymbol(), value.getSentiment());
+                        return new StockSentimentCount(value);
                     }
                 })
-                .keyBy(0)
+                .keyBy(StockSentimentCount.FIELD_SENTIMENT)
                 .timeWindow(AGGREGATION_WINDOW)
-                .sum(1)
+                .sum(StockSentimentCount.FIELD_COUNT)
                 .uid(OP_SUM_TWEETS);
 
         tweetWordCountStream.print();

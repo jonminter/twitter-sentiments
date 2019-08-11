@@ -26,13 +26,13 @@ public class RawTweetMapper implements FlatMapFunction<String, Tweet> {
                     .configure(DeserializationFeature.FAIL_ON_UNKNOWN_PROPERTIES, false);
         }
 
-        logger.debug("Raw tweet = {}", value);
+        logger.trace("Raw tweet = {}", value);
 
-        Tweet tweet = null;
         try {
-            tweet = jsonParser.readValue(value, Tweet.class);
+            Tweet tweet = jsonParser.readValue(value, Tweet.class);
             out.collect(tweet);
         } catch (JsonParseException | JsonMappingException e) {
+            logger.debug("Exception processing tweet = {}", e.getMessage());
 //            logger.error("Exception occurred processing tweet! {}", e);
         }
     }
