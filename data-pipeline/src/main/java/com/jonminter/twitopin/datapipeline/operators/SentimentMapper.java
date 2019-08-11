@@ -1,6 +1,7 @@
 package com.jonminter.twitopin.datapipeline.operators;
 
 import com.jonminter.twitopin.datapipeline.models.StockTweet;
+import com.jonminter.twitopin.datapipeline.nlp.NlpFactory;
 import com.jonminter.twitopin.datapipeline.nlp.SentimentHelper;
 import com.jonminter.twitopin.datapipeline.nlp.StanfordNlpSentimentHelper;
 import com.jonminter.twitopin.datapipeline.models.Sentiment;
@@ -14,7 +15,7 @@ public class SentimentMapper implements MapFunction<StockTweet, StockTweetWithSe
     @Override
     public StockTweetWithSentiment map(StockTweet value) throws Exception {
         if (sentimentHelper == null) {
-            sentimentHelper = new StanfordNlpSentimentHelper();
+            sentimentHelper = NlpFactory.createSentimentHelper();
         }
         Sentiment sentiment = sentimentHelper.getSentimentFromText(value.getText());
 
