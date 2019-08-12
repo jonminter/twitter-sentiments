@@ -72,7 +72,6 @@ public class App {
                 .uid(OP_FILTER_NON_EN_TWEETS)
                 .flatMap(new StockMentionTweetMapper(stocks))
                 .uid(OP_CORRELATE_TO_STOCK)
-                .keyBy(StockTweet.FIELD_STOCK_SYMBOL)
                 .map(new SentimentMapper()) // Run sentiment analysis and find which tweets are neg/neutral/pos
                 .uid(OP_DETERMINE_SENTIMENT)
                 .map(new MapFunction<StockTweetWithSentiment, StockSentimentCount>() {
@@ -82,7 +81,7 @@ public class App {
                         return new StockSentimentCount(value);
                     }
                 })
-                .keyBy(StockSentimentCount.FIELD_SENTIMENT)
+                .keyBy(StockSentimentCount.FIELD_STOCK_SYMBOL, StockSentimentCount.FIELD_SENTIMENT)
                 .timeWindow(AGGREGATION_WINDOW)
                 .sum(StockSentimentCount.FIELD_COUNT)
                 .uid(OP_SUM_TWEETS);
