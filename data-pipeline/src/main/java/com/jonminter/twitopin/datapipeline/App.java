@@ -5,14 +5,12 @@ package com.jonminter.twitopin.datapipeline;
 
 import com.google.common.collect.Lists;
 import com.jonminter.twitopin.datapipeline.models.*;
-import com.jonminter.twitopin.datapipeline.operators.EnglishTweetsOnlyFilter;
-import com.jonminter.twitopin.datapipeline.operators.RawTweetMapper;
-import com.jonminter.twitopin.datapipeline.operators.SentimentMapper;
-import com.jonminter.twitopin.datapipeline.operators.StockMentionTweetMapper;
+import com.jonminter.twitopin.datapipeline.operators.*;
 import com.jonminter.twitopin.datapipeline.sources.SourceFactory;
 import org.apache.flink.api.common.functions.MapFunction;
 import org.apache.flink.api.java.tuple.Tuple2;
 import org.apache.flink.api.java.utils.ParameterTool;
+import org.apache.flink.streaming.api.datastream.AsyncDataStream;
 import org.apache.flink.streaming.api.datastream.DataStream;
 import org.apache.flink.streaming.api.environment.StreamExecutionEnvironment;
 import org.apache.flink.streaming.api.windowing.time.Time;
@@ -20,7 +18,9 @@ import org.apache.flink.streaming.connectors.twitter.TwitterSource;
 import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
 
+import java.io.InputStream;
 import java.util.List;
+import java.util.concurrent.TimeUnit;
 
 public class App {
     private static final Logger logger = LoggerFactory.getLogger(App.class);
@@ -32,10 +32,11 @@ public class App {
     private static final String OP_SUM_TWEETS = "sum_tweets_with_sentiment";
     private static final Time AGGREGATION_WINDOW = Time.seconds(5);
 
+    private static final int STOCK_PRICE_TIMEOUT_MS = 1000;
+    private static final int STOCK_PRICE_CONCURRENCY = 100;
+
     public static void main(String[] args) throws Exception {
-        final ParameterTool params = ParameterTool.fromArgs(args);
-        System.out.println("Usage: App [--output <path>] " +
-                "[--twitter-source.consumerKey <key> --twitter-source.consumerSecret <secret> --twitter-source.token <token> --twitter-source.tokenSecret <tokenSecret>]");
+        final ParameterTool params = ParameterTool.fromPropertiesFile("config/application.properties");
 
         StreamExecutionEnvironment sse = StreamExecutionEnvironment.getExecutionEnvironment();
 
@@ -65,7 +66,7 @@ public class App {
          * - Time window
          * - Sum counts
          */
-        DataStream<StockSentimentCount> tweetWordCountStream = tweetStream
+        DataStream<StockSentimentCount> stockSentimentStream = tweetStream
                 .flatMap(new RawTweetMapper()) // Convert tweet json to text
                 .uid(OP_MAP_TWEET_JSON_TO_MODEL)
                 .filter(new EnglishTweetsOnlyFilter()) // Filter out non-english tweets
@@ -86,7 +87,11 @@ public class App {
                 .sum(StockSentimentCount.FIELD_COUNT)
                 .uid(OP_SUM_TWEETS);
 
-        tweetWordCountStream.print();
+        DataStream<StockSentimentWithPrice> stockWithPriceStream = AsyncDataStream.unorderedWait(
+                stockSentimentStream, new EnrichWithStockPrice(), STOCK_PRICE_TIMEOUT_MS, TimeUnit.MILLISECONDS,
+                STOCK_PRICE_CONCURRENCY);
+
+        stockWithPriceStream.print();
 
         sse.execute("Twitter Word Count");
 

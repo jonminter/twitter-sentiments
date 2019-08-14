@@ -36,6 +36,8 @@ dependencies {
     compile group: 'commons-logging', name: 'commons-logging', version: '1.2'
     compile group: 'edu.stanford.nlp', name: 'stanford-corenlp', version: '3.9.2'
     compile group: 'edu.stanford.nlp', name: 'stanford-corenlp', classifier: 'models-english', version: '3.9.2'
+    compile 'org.glassfish.jersey.core:jersey-client:2.29'
+    compile 'org.glassfish.jersey.media:jersey-media-json-jackson:2.29'
 
     // Use JUnit test framework
     testImplementation 'org.junit.jupiter:junit-jupiter-api:5.4.1'

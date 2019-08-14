@@ -1,0 +1,12 @@
+# Twitter authentication
+twitter-source.consumerKey=
+twitter-source.consumerSecret=
+twitter-source.token=
+twitter-source.tokenSecret=
+
+# IEX Cloud Authentication
+stock.iex.secretToken=
+
+# Alpha Vantage API Key
+stock.alphaVantage.apiUrl=https://www.alphavantage.co/query
+stock.alphaVantage.apiKey=
