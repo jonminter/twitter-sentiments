@@ -93,7 +93,7 @@ public class App {
 
         stockWithPriceStream.print();
 
-        sse.execute("Twitter Word Count");
+        sse.execute("Stock Twitter Sentiment");
 
 
     }
