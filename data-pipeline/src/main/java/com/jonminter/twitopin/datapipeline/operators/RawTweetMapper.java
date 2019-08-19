@@ -2,7 +2,6 @@ package com.jonminter.twitopin.datapipeline.operators;
 
 import com.jonminter.twitopin.datapipeline.models.Tweet;
 import org.apache.flink.api.common.functions.FlatMapFunction;
-import org.apache.flink.api.common.functions.MapFunction;
 import org.apache.flink.shaded.jackson2.com.fasterxml.jackson.core.JsonParseException;
 import org.apache.flink.shaded.jackson2.com.fasterxml.jackson.databind.DeserializationFeature;
 import org.apache.flink.shaded.jackson2.com.fasterxml.jackson.databind.JsonMappingException;
@@ -10,8 +9,6 @@ import org.apache.flink.shaded.jackson2.com.fasterxml.jackson.databind.ObjectMap
 import org.apache.flink.util.Collector;
 import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
-
-import java.io.IOException;
 
 public class RawTweetMapper implements FlatMapFunction<String, Tweet> {
     private static final Logger logger = LoggerFactory.getLogger(Class.class);

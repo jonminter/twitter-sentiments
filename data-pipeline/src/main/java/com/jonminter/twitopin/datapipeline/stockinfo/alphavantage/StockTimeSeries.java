@@ -2,9 +2,6 @@ package com.jonminter.twitopin.datapipeline.stockinfo.alphavantage;
 
 import com.fasterxml.jackson.annotation.JsonIgnoreProperties;
 import com.fasterxml.jackson.annotation.JsonProperty;
-import com.fasterxml.jackson.databind.annotation.JsonDeserialize;
-import com.fasterxml.jackson.databind.deser.std.MapDeserializer;
-import com.fasterxml.jackson.databind.deser.std.StdKeyDeserializer;
 
 import java.util.Map;
 import java.util.StringJoiner;
@@ -65,4 +62,5 @@ public class StockTimeSeries {
                 .add("timeSeries=" + timeSeries)
                 .add("errorMessage=" + errorMessage)
                 .toString();
-    }}
+    }
+}

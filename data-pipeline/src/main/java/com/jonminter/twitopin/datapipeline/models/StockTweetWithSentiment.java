@@ -15,6 +15,7 @@ public class StockTweetWithSentiment extends Tuple4<String, String, Sentiment, I
     public static final int FIELD_TWEET_TEXT = 1;
     public static final int FIELD_SENTIMENT = 2;
     public static final int FIELD_COUNT = 3;
+
     public StockTweetWithSentiment() {
         super(null, null, null, 1);
     }

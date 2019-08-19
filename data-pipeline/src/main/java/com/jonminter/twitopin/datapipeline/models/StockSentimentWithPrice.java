@@ -1,6 +1,5 @@
 package com.jonminter.twitopin.datapipeline.models;
 
-import org.apache.flink.api.java.tuple.Tuple3;
 import org.apache.flink.api.java.tuple.Tuple4;
 
 import java.math.BigDecimal;

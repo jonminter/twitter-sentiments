@@ -4,11 +4,13 @@
 package com.jonminter.twitopin.datapipeline;
 
 import com.google.common.collect.Lists;
-import com.jonminter.twitopin.datapipeline.models.*;
+import com.jonminter.twitopin.datapipeline.models.StockSentimentCount;
+import com.jonminter.twitopin.datapipeline.models.StockSentimentWithPrice;
+import com.jonminter.twitopin.datapipeline.models.StockToTrack;
+import com.jonminter.twitopin.datapipeline.models.StockTweetWithSentiment;
 import com.jonminter.twitopin.datapipeline.operators.*;
 import com.jonminter.twitopin.datapipeline.sources.SourceFactory;
 import org.apache.flink.api.common.functions.MapFunction;
-import org.apache.flink.api.java.tuple.Tuple2;
 import org.apache.flink.api.java.utils.ParameterTool;
 import org.apache.flink.streaming.api.datastream.AsyncDataStream;
 import org.apache.flink.streaming.api.datastream.DataStream;
@@ -19,7 +21,6 @@ import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
 import org.slf4j.bridge.SLF4JBridgeHandler;
 
-import java.io.InputStream;
 import java.util.List;
 import java.util.concurrent.TimeUnit;
 import java.util.logging.LogManager;

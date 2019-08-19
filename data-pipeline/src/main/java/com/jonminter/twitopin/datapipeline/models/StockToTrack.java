@@ -10,6 +10,7 @@ public final class StockToTrack implements Serializable {
 
     private final String symbol;
     private final ImmutableList<String> twitterTerms;
+
     public StockToTrack(String symbol, List<String> twitterTerms) {
         this.symbol = symbol;
         this.twitterTerms = ImmutableList.copyOf(twitterTerms);

@@ -1,7 +1,5 @@
 package com.jonminter.twitopin.datapipeline.operators;
 
-import com.google.common.util.concurrent.AsyncFunction;
-import com.google.common.util.concurrent.ListenableFuture;
 import com.jonminter.twitopin.datapipeline.models.StockInfo;
 import com.jonminter.twitopin.datapipeline.models.StockSentimentCount;
 import com.jonminter.twitopin.datapipeline.models.StockSentimentWithPrice;
@@ -10,7 +8,6 @@ import com.jonminter.twitopin.datapipeline.stockinfo.StockInfoService;
 import org.apache.flink.configuration.Configuration;
 import org.apache.flink.streaming.api.functions.async.ResultFuture;
 import org.apache.flink.streaming.api.functions.async.RichAsyncFunction;
-import org.checkerframework.checker.nullness.qual.Nullable;
 import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
 
@@ -50,7 +47,7 @@ public class EnrichWithStockPrice extends RichAsyncFunction<StockSentimentCount,
                     return null;
                 }
             }
-        }).thenAccept( (StockInfo stockInfoResult) -> {
+        }).thenAccept((StockInfo stockInfoResult) -> {
             resultFuture.complete(Collections.singleton(new StockSentimentWithPrice(input, stockInfoResult.getCurrentPrice())));
         });
 
