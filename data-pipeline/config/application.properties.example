@@ -8,5 +8,5 @@ twitter-source.tokenSecret=
 stock.iex.secretToken=
 
 # Alpha Vantage API Key
-stock.alphaVantage.apiUrl=https://www.alphavantage.co/query
+stock.alphaVantage.baseUrl=https://www.alphavantage.co/query
 stock.alphaVantage.apiKey=

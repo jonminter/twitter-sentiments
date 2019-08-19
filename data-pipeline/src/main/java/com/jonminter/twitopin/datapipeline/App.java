@@ -17,13 +17,20 @@ import org.apache.flink.streaming.api.windowing.time.Time;
 import org.apache.flink.streaming.connectors.twitter.TwitterSource;
 import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
+import org.slf4j.bridge.SLF4JBridgeHandler;
 
 import java.io.InputStream;
 import java.util.List;
 import java.util.concurrent.TimeUnit;
+import java.util.logging.LogManager;
 
 public class App {
     private static final Logger logger = LoggerFactory.getLogger(App.class);
+
+    static {
+        LogManager.getLogManager().reset();
+        SLF4JBridgeHandler.install();
+    }
 
     private static final String OP_MAP_TWEET_JSON_TO_MODEL = "map_tweet_to_pojo";
     private static final String OP_FILTER_NON_EN_TWEETS = "filter_non_en_tweets";
@@ -88,7 +95,7 @@ public class App {
                 .uid(OP_SUM_TWEETS);
 
         DataStream<StockSentimentWithPrice> stockWithPriceStream = AsyncDataStream.unorderedWait(
-                stockSentimentStream, new EnrichWithStockPrice(), STOCK_PRICE_TIMEOUT_MS, TimeUnit.MILLISECONDS,
+                stockSentimentStream, new EnrichWithStockPrice(params.getProperties()), STOCK_PRICE_TIMEOUT_MS, TimeUnit.MILLISECONDS,
                 STOCK_PRICE_CONCURRENCY);
 
         stockWithPriceStream.print();

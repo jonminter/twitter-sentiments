@@ -24,12 +24,15 @@ import java.util.function.Supplier;
 public class EnrichWithStockPrice extends RichAsyncFunction<StockSentimentCount, StockSentimentWithPrice> {
     private final static Logger logger = LoggerFactory.getLogger(EnrichWithStockPrice.class);
     private transient StockInfoService stockInfoService;
+    private Properties properties;
+
+    public EnrichWithStockPrice(Properties properties) {
+        this.properties = properties;
+    }
 
     @Override
     public void open(Configuration parameters) throws Exception {
-        Properties globalProps = new Properties();
-        parameters.addAllToProperties(globalProps);
-        stockInfoService = StockInfoFactory.createStockInfoService(globalProps);
+        stockInfoService = StockInfoFactory.createStockInfoService(this.properties);
     }
 
     @Override
@@ -43,7 +46,7 @@ public class EnrichWithStockPrice extends RichAsyncFunction<StockSentimentCount,
                 try {
                     return stockInfo.get();
                 } catch (InterruptedException | ExecutionException e) {
-                    logger.error("Exception occurred retrieving stock price! {}", e.getMessage());
+                    logger.error("Exception occurred retrieving stock price! {}\n{}", e.getMessage(), e.getStackTrace());
                     return null;
                 }
             }

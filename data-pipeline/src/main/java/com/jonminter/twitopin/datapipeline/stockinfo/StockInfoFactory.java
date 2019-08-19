@@ -10,8 +10,8 @@ public class StockInfoFactory {
     public static StockInfoService createStockInfoService(Properties properties) {
         logger.info("Properties: {}", properties);
         return new AlphaVantageStockService(
-                properties.getProperty("stock.alphavantage.baseUrl"),
-                properties.getProperty("stock.alphavantage.apiKey")
+                properties.getProperty("stock.alphaVantage.baseUrl"),
+                properties.getProperty("stock.alphaVantage.apiKey")
         );
     }
 }
